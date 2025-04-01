@@ -26,8 +26,6 @@ Changes to otis:
 - reduce E1 sensitivity, allowing easier selection of pages
 
 TODO:
-- visualize when feedback is set to unity
-- minor tweaking of UI elements
 - figure out if random graphics glitch is a bug?
 
 ---
