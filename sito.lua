@@ -547,6 +547,9 @@ function init()
   end
   lfo.init()
 
+  params:add_separator("ui")
+  params:add_binary("single_page", "single page interface", "toggle", 1)
+
   params:bang()
   softcut.buffer_clear()
   -- timers for screen and grid redraws
@@ -950,14 +953,16 @@ function draw_buffer(n, x_off, y_off)
 end
 
 function redraw()
-  -- TODO
-  draw_single_page()
-  do return end
-
   screen.clear()
   screen.aa(0)
   screen.font_face(25)
   screen.font_size(6)
+
+  if params:get("single_page") == 1 then
+    draw_single_page()
+    return
+  end
+
   screen.move(30 * page, 5)
   -- current page indication
   if util.time() - page_time < .6 then
