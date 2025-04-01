@@ -780,25 +780,19 @@ local function draw_lfo_info()
 end
 
 function draw_single_page()
-  screen.clear()
-  screen.aa(0)
-  screen.font_face(25)
-  screen.font_size(6)
+  local offset = 12
+  draw_buffer(1, 28, offset)
+  draw_vbar(0, offset+9, params:get("1vol"), muted_L, (page == 1 and alt == 0))
+  draw_vbar(20, offset+9, params:get("1feedback"), false, (page == 2 and alt == 1))
+  draw_pan(12, offset-4, params:get("1pan"))
+  draw_rec(11, offset+5, params:get("1rec") == 1 and "REC" or "")
 
-  draw_buffer(1, 28, 12)
-  draw_buffer(2, 28, 45)
-
-  draw_vbar(0, 20, params:get("1vol"), muted_L, (page == 1 and alt == 0))
-  draw_vbar(0, 56, params:get("2vol"), muted_R, (page == 1 and alt == 0))
-
-  draw_vbar(20, 20, params:get("1feedback"), false, (page == 2 and alt == 1))
-  draw_vbar(20, 56, params:get("2feedback"), false, (page == 2 and alt == 1))
-
-  draw_pan(12, 8, params:get("1pan"))
-  draw_pan(12, 45, params:get("2pan"))
-
-  draw_button(11, 17, params:get("1rec") == 1 and "REC" or "")
-  draw_button(11, 54, params:get("2rec") == 1 and "REC" or "")
+  offset = 41
+  draw_buffer(2, 28, offset)
+  draw_vbar(0, offset+9, params:get("2vol"), muted_R, (page == 1 and alt == 0))
+  draw_vbar(20, offset+9, params:get("2feedback"), false, (page == 2 and alt == 1))
+  draw_pan(12, offset-4, params:get("2pan"))
+  draw_rec(11, offset+5, params:get("2rec") == 1 and "REC" or "")
 
   draw_page_status()
 
@@ -844,7 +838,7 @@ function draw_page_status()
 end
 
 
-function draw_button(x, y, char)
+function draw_rec(x, y, char)
   screen.level(10)
   screen.move(x, y)
   screen.text_center(char)
@@ -869,7 +863,7 @@ end
 
 function draw_vbar(x, y, val, off, active)
   local width = 2
-  local max_height = 18
+  local max_height = 20
   local height = util.linlin(0, 1, 0, max_height, val)
 
   screen.level(3)
@@ -888,24 +882,24 @@ end
 function draw_buffer(n, x_off, y_off)
   screen.level(6)
 
-  local max_height = 6
+  local max_height = 7
   local y_top = y_off - max_height
   local buf_width = 128 - x_off
 
   local buf = buf_snapshots[n]
   if #buf == 0 then return end -- not initialized
   local max = buf_snapshots_max[n]
-  max = 1
+  max = 1 -- TODO
 
-  local x_pos = 0
+  -- draw buffer wave form
   for i, s in ipairs(buf) do
     local height = util.round(math.abs(s) / max * max_height)
-    screen.move(util.linlin(0, #buf-1, x_off, x_off+buf_width, x_pos), y_off - height)
+    screen.move(util.linlin(1, #buf, x_off, x_off+buf_width, i), y_off - height)
     screen.line_rel(0, 2 * height)
     screen.stroke()
-    x_pos = x_pos + 1
   end
 
+  -- draw current play position
   screen.level(3)
   screen.move(util.linlin(0, params:get(n .. "loop_end"), x_off, x_off+buf_width, buf_positions[n]), y_off - max_height)
   screen.line_rel(0, 2 * max_height)
@@ -918,6 +912,7 @@ function draw_buffer(n, x_off, y_off)
   screen.line_rel(0, 2 * max_height)
   screen.stroke()
 
+  -- start text moves with start position, clamp to prevent from overlapping with end text
   l_start = util.clamp(l_start, x_off+8, x_off+buf_width - 32)
   screen.move(l_start, y_off + 2*max_height)
   screen.text_center(string.format("%.2f", params:get(n .. "loop_start")))
@@ -937,13 +932,14 @@ function draw_buffer(n, x_off, y_off)
   local speed = sc.speeds[n]
   screen.text_center(string.format("%.2f", speed))
 
+  -- draw speed as bar
   screen.move(center, y_top+1)
   screen.line_rel(util.linlin(-4.0, 4.0, -45, 45, speed), 0)
   screen.stroke()
 
+  -- draw offset as small tick if LFO is enabled for speed
   local l,r,lfo = check_for_speed_modulation()
   if (n == 1 and l) or (n == 2 and r) then
-    -- draw offset as small tick
     local offset = params:get(n .. "offset")
     screen.level(10)
     screen.move(center + util.linlin(-4.0, 4.0, -45, 45, offset), y_top-1)
