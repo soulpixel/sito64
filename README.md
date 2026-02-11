@@ -7,7 +7,7 @@ stereo "tape" delay/looper thing for norns
 
 join the conversation at - https://llllllll.co/t/22149
 
-sito is an experimental fork of otis by @justmat, and a fork sito from @olt
+sito64 is an experimental fork  of  sito from @olt
 
 Installation:
 
