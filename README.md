@@ -1,5 +1,5 @@
 
-# sito
+# sito64
 
 ![pixelcat](assets/pixelotis.png)
 
@@ -7,72 +7,22 @@ stereo "tape" delay/looper thing for norns
 
 join the conversation at - https://llllllll.co/t/22149
 
-sito is an experimental fork of otis by @justmat
+sito is an experimental fork of otis by @justmat, and a fork sito from @olt
 
 Installation:
 
-sito is not available from maiden. Open repl on norns.local and type the follwowing to install sito:
+sito64 is not available from maiden. Open repl on norns.local and type the follwowing to install sito:
 
 ```
-;install https://github.com/olt/sito.git
+;install https://github.com/soulpixel/sito64.git
 ```
 
-Changes to otis:
+Changes to sito:
 
-- single page interface,
-- speed, flip and LFO now behave the same whether quantization is enabled or not,
-- fine parameter adjustments differ depending on the parameter (more coarse for
-  volume, but identical for start position),
-- reduce E1 sensitivity, allowing easier selection of pages
+compatible with 64 grids
 
 TODO:
-- figure out if random graphics glitch is a bug?
-
----
-
-there are three pages, _mix_, _play_, and _edit_. navigate with encoder 1. hold key 1 for ALT.
-
-### _mix_
-
-* key 2 = mute L
-* key 3 = mute R
-
-* enc 2 = vol L
-* enc 3 = vol R
-* ALT + enc 2 = pan L
-* ALT + enc 3 = pan R
-
-### _play_
-
-* key 2 = flip L
-* key 3 = flip R
-* ALT + key 2 = skip L
-* ALT + key 2 = skip R
-
-* enc 2 = tape speed L
-* enc 3 = tape speed R
-* ALT + enc 2 = feedback L
-* ALT + enc 3 = feedback R
-
-_nb: tape speed behavior by default is free; however, it can be quantized to many different scales via the **parameters** menu._
-_skip behavior by default is a loop reset; however, it can be configured to jump to random positions via the **parameters** menu._
-
-### _edit_
-
-* key 2 = rec L on/off
-* key 3 = rec R on/off
-* ALT + key 2 = clear buffer L
-* ALT + key 3 = clear buffer R
-
-* enc 2 = left loop start
-* enc 3 = right loop start
-* ALT + enc 2 = left loop end
-* ALT + enc 3 = right loop end
-
-_nb: turning rec L/R off will hold the buffer, allowing use as a looper._
-
-_nb: on all pages, alt + enc 1 toggles between fine and coarse parameter adjustments. turn enc 1 right for fine, left for coarse._
----
+- update documentation
 
 # grid 
 
