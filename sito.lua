@@ -84,6 +84,7 @@ local rec2 = true
 local skipped_L = false
 local skipped_R = false
 local fine_adjust = false
+local gridPage=1
 
 local pages = {"mix", "play", "edit"}
 local skip_options = {"start", "???", "coco"}
@@ -1002,6 +1003,37 @@ end
 -- grid stuff
 
 function g.key(x, y, z)
+  if z == 1 then
+  -- flip/skip L/R
+    if x == 1 and y == 4 then
+      print("flip left")
+      flip(1)
+      
+    elseif x == 3 and y == 4 then
+      print("flip right")
+      flip(2)
+    end
+    
+    if x == 2 and y == 4 and z == 1 then
+      skip(1)
+      skip_time_L = util.time()
+      print("skip left")
+    elseif x == 4 and y == 4 and z == 1 then
+      skip(2)
+      skip_time_R = util.time()
+      print("skip right")
+    end 
+    
+    g:led(7, 8, 15)
+  g:led(8, 8, 15)
+     if x == 7 and y == 8 then
+      gridPage = 1 
+      
+    elseif x == 8 and y == 8 then
+      gridPage = 8
+    end
+  end
+  if gridPage == 1 then
   -- grid alt key
   if x == 1 and y == 8 then
     g_alt = z == 1 and true or false
@@ -1033,7 +1065,29 @@ function g.key(x, y, z)
       end
     end
   end
+ -- lfo on/off
+  -- hold grid alt and press either a lfo on/patch or lfo off button
+  -- to clear the lfo target
+  if x >= 3 and x <= 6 and y == 7 then
+    lfo_index = x - 2
+    --current_lfo = lfo_index
+    if g_alt then
+      params:set(lfo_index .. "lfo_target", 1)
+    else
+      params:set(lfo_index .. "lfo", 2)
+      show_lfo_info[lfo_index] = z == 1 and true or false
+    end
+  end
 
+  if x >= 3 and x <= 6 and y == 8 and z == 1 then
+    lfo_index = x - 2
+    if g_alt then
+      params:set(lfo_index .. "lfo", 0)
+      params:set(lfo_index .. "lfo_target", 1)
+    else
+      params:set(lfo_index .. "lfo", 0)
+    end
+  end
   if z == 1 then
     -- record L/R on/off toggles
     if x == 1 and y == 1 then
@@ -1049,20 +1103,7 @@ function g.key(x, y, z)
       rec2 = false
       params:set("2rec", rec2 == true and 1 or 0)
     end
-    -- flip/skip L/R
-    if x == 4 and y == 1 then
-      flip(1)
-    elseif x == 4 and y == 5 then
-      flip(2)
-    end
-  
-    if x == 5 and y == 1 and z == 1 then
-      skip(1)
-      skip_time_L = util.time()
-    elseif x == 5 and y == 5 and z == 1 then
-      skip(2)
-      skip_time_R = util.time()
-    end
+   
     -- speed controls
     -- holding grid alt and pressing a speed button will return speed to 1
     -- otherwise increase or decrease speed, respecting the speed mode settings
@@ -1141,19 +1182,21 @@ function g.key(x, y, z)
         softcut.buffer_clear_channel(2)
       end
     end
+    end
+   elseif gridPage == 8 then
     -- jump to rough position
-    if x >= 9 and x <= 16 and y == 1 then
+    if x >= 1 and x <= 8 and y == 1 then
       local s, e = params:get("1loop_start"), params:get("1loop_end") 
-      local p = util.linlin(9, 16, s, e, x)
+      local p = util.linlin(1, 8, s, e, x)
       softcut.position(1, p)
-    elseif x >= 9 and x <= 16 and y == 5 then
+    elseif x >= 1 and x <= 8 and y == 5 then
       local s, e = params:get("2loop_start"), params:get("2loop_end") 
-      local p = util.linlin(9, 16, s, e, x)
+      local p = util.linlin(1, 8, s, e, x)
       softcut.position(2, p)
     end
     -- set pan position
-    if x > 9 and x <= 14 then
-      local pan = util.linlin(10, 14, -1, 1, x)
+    if x > 1 and x <= 6 then
+      local pan = util.linlin(2, 6, -1, 1, x)
       if y == 3  then 
         params:set("1pan", pan)
       elseif y == 7 then
@@ -1161,48 +1204,34 @@ function g.key(x, y, z)
       end
     end
     -- double/half loop length
-    if x == 10 and y == 2 or x == 14 and y == 2 then
+    if x == 2 and y == 2 or x == 6 and y == 2 then
       local s, e = params:get("1loop_start"), params:get("1loop_end") 
       local l = e - s
-      local nl = x == 10 and l / 2 or l * 2
+      local nl = x == 2 and l / 2 or l * 2
       params:set("1loop_end", s + nl)
-    elseif x == 10 and y == 6  or x == 14 and y == 6 then
+    elseif x == 2 and y == 6  or x == 6 and y == 6 then
       local s, e = params:get("2loop_start"), params:get("2loop_end") 
       local l = e - s
-      local nl = x == 10 and l / 2 or l * 2
+      local nl = x == 2 and l / 2 or l * 2
       params:set("2loop_end", s + nl)
     end
-  end
-  -- lfo on/off
-  -- hold grid alt and press either a lfo on/patch or lfo off button
-  -- to clear the lfo target
-  if x >= 3 and x <= 6 and y == 7 then
-    lfo_index = x - 2
-    --current_lfo = lfo_index
-    if g_alt then
-      params:set(lfo_index .. "lfo_target", 1)
-    else
-      params:set(lfo_index .. "lfo", 2)
-      show_lfo_info[lfo_index] = z == 1 and true or false
-    end
-  end
-
-  if x >= 3 and x <= 6 and y == 8 and z == 1 then
-    lfo_index = x - 2
-    if g_alt then
-      params:set(lfo_index .. "lfo", 0)
-      params:set(lfo_index .. "lfo_target", 1)
-    else
-      params:set(lfo_index .. "lfo", 0)
-    end
-  end
+  
+ end
 end
 
 
 function grid_redraw()
 
   g:all(0)
-
+  g:led(1, 4, 15)
+  g:led(2, 4, 15)
+  g:led(3, 4, 15)
+  g:led(4, 4, 15)
+  
+  g:led(7, 8, 15)
+  g:led(8, 8, 15)
+  
+ if gridPage == 1 then
   if rec1 then
     g:led(1, 1, 15)
     g:led(2, 1, 4)
@@ -1210,13 +1239,8 @@ function grid_redraw()
     g:led(1, 1, 4)
     g:led(2, 1, 15)
   end
-
-  g:led(4, 1, 15)
-  g:led(5, 1, 15)
-
-  g:led(1, 2, 15)
+g:led(1, 2, 15)
   g:led(8, 2, 15)
-  
   if params:get("speed_controls") > 1 then
     for i = 1, 6 do
       g:led(i + 1, 2, 4)
@@ -1233,9 +1257,7 @@ function grid_redraw()
     g:led(2, 5, 15)
   end
 
-  g:led(4, 5, 15)
-  g:led(5, 5, 15)
-
+  
   g:led(1, 6, 15)
   g:led(8, 6, 15)
 
@@ -1256,25 +1278,28 @@ function grid_redraw()
     g:led(i + 2, 7, params:get(i .. "lfo") == 2 and math.floor(util.linlin( -1, 1, 0, 15, lfo[i].slope)) or 4)
     g:led(i + 2, 8, params:get(i .. "lfo") == 2 and 4 or 15)
   end
+  
+  elseif gridPage == 8 then
   -- rough buffer position
   for i = 1, 2 do
     local loop_in, loop_out = params:get(i .. "loop_start"), params:get(i .. "loop_end")
-    for j = 9, 16 do
+    for j = 1, 8 do
       g:led(j, i == 1 and 1 or 5, 4)
     end
-    g:led(math.floor(util.linlin(loop_in, loop_out, 9, 17, positions[i])), i == 1 and 1 or 5, 15)
+    g:led(math.floor(util.linlin(loop_in, loop_out, 1, 9, positions[i])), i == 1 and 1 or 5, 15)
   end
   -- loop length modifiers
-  g:led(10, 2, 15)
-  g:led(14, 2, 15)
-  g:led(10, 6, 15)
-  g:led(14, 6, 15)
+  g:led(2, 2, 15)
+  g:led(6, 2, 15)
+  g:led(2, 6, 15)
+  g:led(6, 6, 15)
   -- pan position
   for i = 1, 2 do
-    for j = 10, 14 do
+    for j = 2, 6 do
       g:led(j, i == 1 and 3 or 7, 4)
-      g:led(math.floor(util.linlin(-1, 1, 10, 14, params:get(i == 1 and "1pan" or "2pan"))), i== 1 and 3 or 7, 15)
+      g:led(math.floor(util.linlin(-1, 1, 2, 6, params:get(i == 1 and "1pan" or "2pan"))), i== 1 and 3 or 7, 15)
     end
+  end
   end
   g:refresh()
 end
